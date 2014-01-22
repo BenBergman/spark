@@ -71,3 +71,21 @@ it_charts_no_tier_0() {
   test $graph = '▁▂▄▆█'
 
 }
+
+it_handles_multiple_heights() {
+  data="1,2,3,4,5,6,7,8"
+  graph="$($spark -H 2 $data)"
+
+  test "$graph" = '    ▁▃▅▇
+▁▃▅▇████'
+
+}
+
+#it_handles_multiple_heights_with_all_vals() {
+#  data="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16"
+#  graph="$($spark -H 2 $data)"
+#
+#  test "$graph" = '        ▁▂▃▄▅▆▇█
+#▁▂▃▄▅▆▇█████████'
+#
+#}

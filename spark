@@ -58,14 +58,27 @@ spark()
   # print ticks
   local ticks=(▁ ▂ ▃ ▄ ▅ ▆ ▇ █)
 
-  local f=$(( (($max-$min)<<8)/(${#ticks[@]}-1) ))
+  local f=$(( (($max-$min)<<8)/((${#ticks[@]}-1)*$height) ))
   (( f < 1 )) && f=1
 
-  for n in $numbers
+  for h in $(seq 1 $height)
   do
-    _echo -n ${ticks[$(( ((($n-$min)<<8)/$f) ))]}
+    local local_min=$(( $min + ($max-$min+1)/$height*($height-$h) ))
+    for n in $numbers
+    do
+      local pos=$(( ((($n-$local_min)<<8)/$f) ))
+      if (( pos < 0 ))
+      then
+        _echo -n " "
+      elif (( pos > ${#ticks[@]}-1 ))
+      then
+        _echo -n ${ticks[${#ticks[@]}-1]}
+      else
+        _echo -n ${ticks[$pos]}
+      fi
+    done
+    _echo
   done
-  _echo
 }
 
 # If we're being sourced, don't worry about such things
@@ -89,8 +102,25 @@ if [ "$BASH_SOURCE" == "$0" ]; then
 EOF
   }
 
+  height="1"
+
+  while getopts  "H:h" flag
+  do
+    case $flag in
+      H)
+        height=$OPTARG;;
+      h)
+        help
+        exit 0
+        ;;
+    esac
+  done
+
+  # Will discard arguments if flags don't go first
+  shift $(( $OPTIND -1 ))
+
   # show help for no arguments if stdin is a terminal
-  if { [ -z "$1" ] && [ -t 0 ] ; } || [ "$1" == '-h' ] || [ "$1" == '--help' ]
+  if { [ -z "$1" ] && [ -t 0 ] ; } || [ "$1" == '--help' ]
   then
     help
     exit 0
